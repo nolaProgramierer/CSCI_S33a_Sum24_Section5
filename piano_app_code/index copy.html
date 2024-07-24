@@ -1,0 +1,78 @@
+{% extends 'piano_app/layout.html' %}
+{% load static %}
+{% load humanize %}
+
+{% block body %}
+
+<div class="row justify-content-around">
+    <div class="col-8">
+        <h3>This is the piano app index page</h3>
+
+    {% if messages %}
+        <div class="messages">
+            {% for message in messages %}
+                <div class="alert alert-{{ message.tags }}">
+                    {{ message }}
+                </div>
+            {% endfor %}
+        </div>
+        
+    {% endif %}
+
+    <hr/>
+        <h4>Listing of pianos</h4>
+    <!--Creating a list of entries-->
+    {% for piano in pianos %}
+
+        <div class="card mb-3">
+                <div class="row no-gutters">
+                    {% if piano.imageUrl %}
+                        <div class="col-md-4">
+                            <img src="{{ piano.imageUrl }}" class="card-img" alt="{{ piano.title }}">
+                        </div>
+                        <div class="col-md-8">
+                    {% else %}
+                        <div class="col-md-12">
+                    {% endif %}
+                            <div class="card-body" data-piano="{{ piano.id }}">
+                                {% csrf_token %}
+                                
+                                {% if user.is_authenticated %}
+                                    <h5 class="card-title">
+                                        <a href="{% url 'piano_detail' piano.id %}">{{ piano.brand }}</a>
+                                    </h5>
+                                {% else %}
+                                    <h5>
+                                    {{ piano.brand }}
+                                    </h5>
+                                {% endif %}
+                                
+                                <p data-piano="{{ piano.id }}"class="card-text"><strong>Price:</strong> ${{ piano.price|intcomma }}</p>
+                            
+                                <p data-piano="{{ piano.id }}" class="card-text">Size: {{ piano.size }} cm</p>
+                                
+                                {% if user.is_authenticated %}
+                                    <button data-piano="{{ piano.id }}" class="btn btn-info vote-btn" type="button">Vote</button>
+                                    
+                                    <p data-piano="{{ piano.id }}"class="card-text piano-votes" >Number of votes: {{piano.vote}}</p>
+                                {% endif %}
+                                <!--Display error message-->
+                                <p data-piano="{{ piano.id }}" class="card-text vote-msg"></p>
+                            </div>
+                        </div>
+                        {% if user.is_authenticated and piano.owner.username == request.user.username %}
+                            <a href="#" class="piano_delete_links" data-piano="{{ piano.id }}" data-url="{% url 'delete_piano' piano.id %}">Delete piano</a>
+                        {% endif %}          
+                </div>
+        </div>
+    {% empty %}
+       No pianos to list.
+    {% endfor %}
+
+    <!-- JavaScript File -->
+    <script src="{% static 'piano_app/scripts.js' %}"></script>
+
+{% endblock %}
+    </div>
+</div>
+
